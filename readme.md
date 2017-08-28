@@ -1,20 +1,16 @@
+## 测试用例：
 
-
-##测试用例：
-
-####test1:
+#### test1:
 ```
 echo {0..2}|./xargs
 ```
 不指定command的时候，默认为echo
 期望输出：
 ```
-0
-1
-2
+0 1 2
 ```
 
-####test2:
+#### test2:
 ```
 ./index.js -n a echo
 ./index.js -P a echo
@@ -28,7 +24,7 @@ xargs: invalid number for -P option
 1: command not found
 ```
 
-####test3:
+#### test3:
 ```
 ./index.js -z echo
 ./index.js --z echo
@@ -41,7 +37,7 @@ xargs: invalid option '-z'
 1: command not found
 ```
 
-####test4:
+#### test4:
 ```
 echo {0..1}|./xargs ls
 $?
@@ -54,7 +50,7 @@ ls: cannot access 1: No such file or directory
 123: command not found
 ```
 
-####test5:
+#### test5:
 ```
 echo {0..3}|./xargs -n 2 echo
 ```
@@ -65,7 +61,7 @@ echo {0..3}|./xargs -n 2 echo
 2 3
 ```
 
-####test6:
+#### test6:
 ```
 echo {0..2}|./xargs -n 2 echo
 ```
@@ -76,7 +72,7 @@ echo {0..2}|./xargs -n 2 echo
 2
 ```
 
-####test7:
+#### test7:
 ```
 echo {0..2}|./xargs -n 2 echo
 ```
@@ -87,14 +83,14 @@ echo {0..2}|./xargs -n 2 echo
 2
 ```
 
-####test8:
+#### test8:
 ```
-echo {0..3}|./xargs -P 2 sh -c "sleep 1 && echo done"
+echo {0..3}|./xargs -n 1 -P 2 sh -c "sleep 1 && echo done"
 ```
 设置-P之后，同时最多只会并发P个进程
 期望输出：每秒输出一组"done", 每组P个
 
-####test9:
+#### test9:
 ```
 ls ./lib/*.js |./xargs -n 2 -P 2 wc -l
 ```
@@ -109,7 +105,7 @@ ls ./lib/*.js |./xargs -n 2 -P 2 wc -l
  195 total
 ```
 
-####test10:
+#### test10:
 ```
 ls ./lib/*.js |./xargs -n 2 wc -l
 ```
@@ -124,7 +120,7 @@ ls ./lib/*.js |./xargs -n 2 wc -l
  195 total
 ```
 
-####test11:
+#### test11:
 ```
 ls ./lib/*.js |./xargs -n 2 -P 0 wc -l
 ```
@@ -139,7 +135,7 @@ ls ./lib/*.js |./xargs -n 2 -P 0 wc -l
  195 total
 ```
 
-####test12:
+#### test12:
 ```
 echo {0..3}|./xargs -n 1 -n 3 -n 2 echo
 ```
@@ -150,11 +146,10 @@ option被重复设置后，以最后一次设置的为准
 2 3
 ```
  
-##花费时间
+## 花费时间
 **6h**
 
-##已知bug和可优化的地方
+## 已知bug和可优化的地方
 
-* 传入参数只支持 -P {maxProcs} 的方式，而builtin的xargs还支持 -P{maxProcs} 和 --maxPorcs={maxProcs} 两种写法
-* workerManager目前对 -P 的实现是，如果已经到达最大进程数，则等待workerClose事件式再次尝试，数据量大的情况下会导致监听workerClose的回调函数过多，添加一个队列可以解决问题
+* 传入参数只支持 -P {maxProcs} 的方式，而builtin的xargs还支持 -P{maxProcs} 和 --maxPorcs={maxProcs} 两种写法，argsParser可以优化
 
