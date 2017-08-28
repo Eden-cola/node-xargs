@@ -38,6 +38,22 @@ workerManager.on('workerError', ()=>{
   process.exitCode = 123;
 })
 
+//node版本低于8时，手动处理末尾数据
+if (process.version.split('.').unshift() < 8) {   
+  process.stdin.on('end', () => {               
+    streamSplit.bufferFlush();                
+    process.nextTick(() => {                  
+      streamSplit.emit('end')               
+    });                                       
+  })                                            
+  streamSplit.on('end', () => {                 
+    argGroup.bufferFlush();                   
+    process.nextTick(() => {                  
+      argGroup.emit('end')                  
+    });                                       
+  })                                            
+}                                                 
+
 process.stdin
   .pipe(streamSplit)//划分
   .pipe(argGroup)//分组

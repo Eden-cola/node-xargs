@@ -152,5 +152,5 @@ option被重复设置后，以最后一次设置的为准
 
 ## 已知bug和可优化的地方
 
-* 传入参数只支持 -P {maxProcs} 的方式，而builtin的xargs还支持 -P{maxProcs} 和 --maxPorcs={maxProcs} 两种写法，argsParser可以优化
+* 传入参数只支持 -P {maxProcs} 的方式，而builtin的xargs还支持 -P{maxProcs} 和 --maxPorcs={maxProcs} 两种写法，ArgsParser可以优化
 
