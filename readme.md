@@ -5,7 +5,7 @@
 echo {0..2}|./xargs
 ```
 不指定command的时候，默认为echo
-期望输出：
+#### 期望输出：
 ```
 0 1 2
 ```
@@ -17,7 +17,7 @@ echo {0..2}|./xargs
 $?
 ```
 -n或者-P后的参数不为数字时，提示用户，并使exitCode=1
-期望输出：
+#### 期望输出：
 ```
 xargs: invalid number for -n option
 xargs: invalid number for -P option
@@ -31,7 +31,7 @@ xargs: invalid number for -P option
 $?
 ```
 使用未定义的option时，提示用户，并使exitCode=1
-期望输出：
+#### 期望输出：
 ```
 xargs: invalid option '-z'
 1: command not found
@@ -43,7 +43,7 @@ echo {0..1}|./xargs ls
 $?
 ```
 进程error时，输出错误信息，并使exitCode=123
-期望输出：
+#### 期望输出：
 ```
 ls: cannot access 0: No such file or directory
 ls: cannot access 1: No such file or directory
@@ -55,7 +55,7 @@ ls: cannot access 1: No such file or directory
 echo {0..3}|./xargs -n 2 echo
 ```
 输入参数总数可以被n整除时,可以正常工作
-期望输出：
+#### 期望输出：
 ```
 0 1
 2 3
@@ -66,7 +66,7 @@ echo {0..3}|./xargs -n 2 echo
 echo {0..2}|./xargs -n 2 echo
 ```
 输入参数总数不可以被n整除时,可以正常工作
-期望输出：
+#### 期望输出：
 ```
 0 1
 2
@@ -77,7 +77,7 @@ echo {0..2}|./xargs -n 2 echo
 echo {0..2}|./xargs -n 2 echo
 ```
 输入参数总数不可以被n整除时,可以正常工作
-期望输出：
+#### 期望输出：
 ```
 0 1
 2
@@ -88,14 +88,15 @@ echo {0..2}|./xargs -n 2 echo
 echo {0..3}|./xargs -n 1 -P 2 sh -c "sleep 1 && echo done"
 ```
 设置-P之后，同时最多只会并发P个进程
-期望输出：每秒输出一组"done", 每组P个
+#### 期望输出：
+每秒输出一组"done", 每组P个
 
 #### test9:
 ```
 ls ./lib/*.js |./xargs -n 2 -P 2 wc -l
 ```
 设置-P之后，并发进程输出也会作为流并发写入到stdout
-期望输出：
+#### 期望输出：
 ```
   82 ./lib/streamSplit.js
  113 ./lib/workerManager.js
@@ -110,7 +111,7 @@ ls ./lib/*.js |./xargs -n 2 -P 2 wc -l
 ls ./lib/*.js |./xargs -n 2 wc -l
 ```
 不设置-P时，最大并发进程数默认为1，各进程不会并发执行
-期望输出：
+#### 期望输出：
 ```
   73 ./lib/argGroup.js
  145 ./lib/argsParser.js
@@ -125,7 +126,7 @@ ls ./lib/*.js |./xargs -n 2 wc -l
 ls ./lib/*.js |./xargs -n 2 -P 0 wc -l
 ```
 -P设为0时，所有进程会全部并发执行
-期望输出：
+#### 期望输出：
 ```
   82 ./lib/streamSplit.js
  113 ./lib/workerManager.js
@@ -140,7 +141,7 @@ ls ./lib/*.js |./xargs -n 2 -P 0 wc -l
 echo {0..3}|./xargs -n 1 -n 3 -n 2 echo
 ```
 option被重复设置后，以最后一次设置的为准
-期望输出：
+#### 期望输出：
 ```
 0 1
 2 3
