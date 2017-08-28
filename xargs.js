@@ -1,121 +1,45 @@
-"use strict"
-const { Duplex } = require('stream');
-const { spawn } = require('child_process');
-
+#!/usr/bin/env node
 /**
- * @param {String} option
- * @return boolean
+ * node-xargs
+ * @auther eden_cola
+ * @email eden_cola@aliyun.com
  */
-function isInt (value) {
-  return parseInt(value) == value;
-}
 
-class Xargs extends Duplex {
-  constructor (argv) {
-    super({
-      objectMode:true
-    });
-    this.command = 'echo';
-    this.args = [];
-    this.maxArgs = 1;
-    this.maxProcs = 0;
-    this.input = [];
-    this.procs = 0;
-    this.setExecAndArgs(argv);
-  }
+"use strict"
 
-  setExecAndArgs (args) {
-    if (args.length == 0)
-      return;
-    const arg = args.shift();
-    if (arg == '-n') {
-      return this.setMaxArgs(arg, args);
-    } else if (arg == '-P'){
-      return this.setMaxProcs(arg, args);
-    }
-    this.command = arg;
-    this.args = args;
-  }
+const WorkerManager = require('./lib/workerManager');
+const StreamSplit = require('./lib/streamSplit');
+const ArgsParser = require('./lib/argsParser');
+const ArgGroup = require('./lib/argGroup');
 
-  /**
-   * @param {String} option
-   * @return null
-   */
-  setMaxArgs (option, args) {
-    let value = args.shift();
-    if (!isInt(value))
-      this.error (`xargs: invalid number for ${option} option`);
-    value = parseInt(value);
-    if (value < 1)
-      this.error (`xargs: value for ${option} option should be >= 1`);
-    this.maxArgs = value;
-    return this.setExecAndArgs(args)
-  }
+//去除argv中的node和js文件
+const argv = process.argv.slice(2);
+//解析args
+const args = new ArgsParser(argv);
 
-  /**
-   * @param {String} option
-   * @return null
-   */
-  setMaxProcs (option, args) {
-    let value = args.shift();
-    if (!isInt(value))
-      error (`xargs: invalid number for ${option} option`);
-    value = parseInt(value);
-    if (value < 0)
-      this.error (`xargs: value for ${option} option should be >= 0`);
-    this.maxProcs = value;
-    return this.setExecAndArgs(args)
-  }
+//基于换行符和空格进行分组
+const NEWLINE = 0x0a; //\n
+const SPACE = 0x20; //space
+const streamSplit = new StreamSplit([NEWLINE, SPACE]);
 
-  error (info) {
-    console.log(info);
-    process.exit(-1);
-  }
+//参数分组
+const argGroup = new ArgGroup(args.getMaxArgs());
 
-  createWorker (input) {
-    if (this.maxProcs && this.procs == this.maxProcs) {
-      this.once('workerClose', () => {
-        this.createWorker(input);
-      });
-      return ;
-    }
-    this.procs++;
-    const worker = spawn(this.command,
-      [...this.args, ...input]);
-    worker.stdout.on('data', (data) => {
-      this.push(data);
-    });
-    worker.stderr.on('data', (data) => {
-      this.push(data);
-    });
-    worker.on('close', () => {
-      this.procs--;
-      this.emit('workerClose');
-    })
-  }
+//设置指令和参数
+const workerManager = new WorkerManager({
+  command : args.getCommand(),//指令
+  args : args.getArgs(),//执行时携带的参数
+  maxProcs : args.getMaxProcs()//最大并发进程数
+});
 
-  appendInput (arg) {
-    this.input.push(arg);
-    if (this.input.length == this.maxArgs) {
-      this.createWorker(this.input);
-      this.input = [];
-    }
-  }
+//如果指令发生了异常，则将exitCode设为123
+workerManager.on('workerError', ()=>{
+  //123: any invocation exited with a non-zero status 
+  process.exitCode = 123;
+})
 
-  _write (chunk, encoding, cb) {
-    console.log(chunk);
-    this.appendInput(chunk.toString());
-    process.nextTick(cb);
-  }
-
-  _read (size) {
-  }
-
-  _final (cb) {
-    this.createWorker(this.input);
-    this.input = [];
-    process.nextTick(cb)
-  }
-}
-
-module.exports = Xargs;
+process.stdin
+  .pipe(streamSplit)//划分
+  .pipe(argGroup)//分组
+  .pipe(workerManager)//执行
+  .pipe(process.stdout);//输出
