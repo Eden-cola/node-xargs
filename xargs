@@ -40,19 +40,13 @@ workerManager.on('workerError', ()=>{
 
 //node版本低于8时，手动处理末尾数据
 if (process.version.split('.').unshift() < 8) {   
-  process.stdin.on('end', () => {               
-    streamSplit.bufferFlush();                
-    process.nextTick(() => {                  
-      streamSplit.emit('end')               
-    });                                       
-  })                                            
-  streamSplit.on('end', () => {                 
-    argGroup.bufferFlush();                   
-    process.nextTick(() => {                  
-      argGroup.emit('end')                  
-    });                                       
-  })                                            
-}                                                 
+  process.stdin.on('end', () => {
+    streamSplit.flush();
+  })
+  streamSplit.on('end', () => {
+    argGroup.flush();
+  })
+}
 
 process.stdin
   .pipe(streamSplit)//划分
