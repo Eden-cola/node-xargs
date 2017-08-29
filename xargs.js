@@ -39,7 +39,7 @@ workerManager.on('workerError', ()=>{
 })
 
 //node版本低于8时，手动处理末尾数据
-if (process.version.split('.').unshift() < 8) {   
+if (process.version.split('.').shift() != 'v8') {   
   process.stdin.on('end', () => {
     streamSplit.flush();
   })

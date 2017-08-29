@@ -38,8 +38,8 @@ workerManager.on('workerError', ()=>{
   process.exitCode = 123;
 })
 
-//node版本低于8时，手动处理末尾数据
-if (process.version.split('.').unshift() < 8) {   
+//node版本不为v8时，手动处理末尾数据
+if (process.version.split('.').shift() != 'v8') {   
   process.stdin.on('end', () => {
     streamSplit.flush();
   })
